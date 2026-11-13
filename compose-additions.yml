@@ -1,0 +1,73 @@
+  # --- app services (Dima's homework additions; append under `services:`) ---
+
+  studentservice:
+    build: ./studentservice
+    container_name: studentservice
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./studentservice/.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  teacherservice:
+    build: ./teacherservice
+    container_name: teacherservice
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./teacherservice/.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  employeeservice:
+    build: ./employeeservice
+    container_name: employeeservice
+    ports:
+      - "5003:5003"
+    env_file:
+      - ./employeeservice/.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  profileservice:
+    build: ./profileservice
+    container_name: profileservice
+    ports:
+      - "5004:5004"
+    env_file:
+      - ./profileservice/.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      object-storage:
+        condition: service_healthy
+
+  thumbnailworker:
+    build: ./thumbnailworker
+    container_name: thumbnailworker
+    env_file:
+      - ./thumbnailworker/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - studentservice
+      - teacherservice
+      - employeeservice
+      - profileservice

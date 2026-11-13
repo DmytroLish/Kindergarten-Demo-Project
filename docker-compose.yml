@@ -1,0 +1,45 @@
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: myUser
+      MONGO_INITDB_ROOT_PASSWORD: myPassword
+    ports:
+      - "27017:27017"
+  employee:
+    build: ./employeeservice
+    depends_on:
+      - mongo
+  student:
+    build: ./studentservice
+    depends_on:
+      - mongo
+  teacher:
+    build: ./teacherservice
+    depends_on:
+      - mongo
+  frontend:
+    build: ./frontend
+    depends_on:
+      - employee
+      - student
+      - teacher
+  # Phase 2.3 (2026-11-12): nginx reverse-proxy gateway — the only public
+  # entry point, same pattern as the Goals Project (see nginx/default.conf).
+  # The app services above no longer publish their own ports; all web
+  # traffic enters through the gateway on port 80:
+  #   /              -> frontend:3000
+  #   /api/student/* -> student:5001, /api/teacher/* -> teacher:5002,
+  #   /api/employee/* -> employee:5003 (prefix rewritten away)
+  nginx:
+    build: ./nginx
+    container_name: nginx-gateway
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      - frontend
+      - employee
+      - student
+      - teacher
